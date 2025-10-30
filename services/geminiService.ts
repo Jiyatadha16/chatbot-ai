@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from "@google/genai";
 
 const API_KEY = process.env.API_KEY;
@@ -22,10 +21,10 @@ export const analyzeTextWithGemini = async (text: string): Promise<string> => {
       
       Text to analyze: "${text}"
     `;
-
+    // FIX: Updated contents to be passed as a ContentPart for consistency.
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: prompt
+        contents: { parts: [{ text: prompt }] }
     });
 
     return response.text;

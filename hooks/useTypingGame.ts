@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import type { TypingState, TypingActions } from '../types';
 
@@ -44,10 +43,12 @@ export const useTypingGame = (text: string): { state: TypingState, actions: Typi
     }
   }, [state.status, state.startTime, calculateWPM]);
 
-  const handleKeyDown = (key: string) => {
-    if (state.status === 'finished') return;
-
+  const handleKeyDown = useCallback((key: string) => {
     setState(prevState => {
+      if (prevState.status === 'finished') {
+        return prevState;
+      }
+
       let { typed, cursor, startTime, errors, streak, status, wordCompleted, endTime } = prevState;
 
       if (status === 'idle') {
@@ -101,15 +102,15 @@ export const useTypingGame = (text: string): { state: TypingState, actions: Typi
 
       return { ...prevState, typed, cursor, startTime, errors, streak, status, wpm, accuracy, wordCompleted };
     });
-  };
+  }, [text, calculateWPM, calculateAccuracy]);
 
-  const setWordCompleted = (completed: boolean) => {
+  const setWordCompleted = useCallback((completed: boolean) => {
     setState(prevState => ({...prevState, wordCompleted: completed}));
-  }
+  }, []);
 
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setState(initialState(text));
-  };
+  }, [text]);
 
   return { state, actions: { handleKeyDown, resetGame, setWordCompleted } };
 };

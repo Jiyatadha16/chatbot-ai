@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import type { TypingState, TypingActions } from '../types';
 import { useTypingSounds } from '../hooks/useTypingSounds';
@@ -35,8 +34,9 @@ const Character: React.FC<{
 
 const TypingArea: React.FC<TypingAreaProps> = ({ state, actions, soundEnabled }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { playKeySound } = useTypingSounds();
-  const { wordCompleted, setWordCompleted } = actions;
+  const { playKeySound, playErrorSound, playWordCompleteSound } = useTypingSounds();
+  const { wordCompleted } = state;
+  const { setWordCompleted } = actions;
   
   useEffect(() => {
     inputRef.current?.focus();
@@ -50,20 +50,29 @@ const TypingArea: React.FC<TypingAreaProps> = ({ state, actions, soundEnabled })
         return;
       }
       if (e.key.length === 1 || e.key === 'Backspace') {
-        if (soundEnabled && e.key !== 'Backspace') playKeySound();
+        if (soundEnabled && e.key.length === 1) { // Play sound for character keys only
+          if (e.key === state.text[state.cursor]) {
+            playKeySound();
+          } else {
+            playErrorSound();
+          }
+        }
         actions.handleKeyDown(e.key);
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [actions, soundEnabled, playKeySound]);
+  }, [actions, soundEnabled, playKeySound, playErrorSound, state.cursor, state.text]);
 
   useEffect(() => {
     if (wordCompleted) {
+        if (soundEnabled) {
+          playWordCompleteSound();
+        }
         setTimeout(() => setWordCompleted(false), 1500); // match animation duration
     }
-  }, [wordCompleted, setWordCompleted]);
+  }, [wordCompleted, setWordCompleted, soundEnabled, playWordCompleteSound]);
 
   return (
     <div className="relative w-full max-w-4xl mx-auto" onClick={() => inputRef.current?.focus()}>

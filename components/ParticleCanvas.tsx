@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useCallback } from 'react';
 
 interface Particle {
@@ -14,11 +13,15 @@ interface ParticleCanvasProps {
   wpm: number;
 }
 
+// FIX: Moved isDarkTheme outside of the component to make it a pure helper function.
+// This prevents it from being recreated on every render and avoids potential issues with
+// stale closures or missing dependencies in `useCallback` hooks that use it.
+const isDarkTheme = () => document.documentElement.classList.contains('dark');
+
 const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ wpm }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationFrameId = useRef<number>();
-  const isDarkTheme = () => document.documentElement.classList.contains('dark');
 
   const createParticle = useCallback((width: number, height: number): Particle => {
     return {
